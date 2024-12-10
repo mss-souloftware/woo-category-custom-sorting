@@ -118,12 +118,15 @@ class WooCategoryDisplayPlugin
             $image_url = $image_id ? wp_get_attachment_url($image_id) : wc_placeholder_img_src();
             $category_url = get_term_link($category);
 
-            $product_count = $show_product_count ? ' (' . $category->count . ')' : '';
+            $product_count = $show_product_count ? $category->count : '';
 
             $output .= '<div class="wc-category">';
             $output .= '<a href="' . esc_url($category_url) . '">';
             $output .= '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($category->name) . '" class="category-image">';
-            $output .= '<h3>' . esc_html($category->name) . $product_count . '</h3>';
+            $output .= '<div class="textData">';
+            $output .= '<h3>' . esc_html($category->name) . '</h3>';
+            $output .= '<span> ' . $product_count . ' productos </span>';
+            $output .= '</div>';
             $output .= '</a>';
             $output .= '</div>';
         }
