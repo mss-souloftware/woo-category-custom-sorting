@@ -1,0 +1,21 @@
+#sortable-category-list {
+    list-style: none;
+    padding: 0;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: move;
+}
+
+.category-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    border-radius: 3px;
+}
