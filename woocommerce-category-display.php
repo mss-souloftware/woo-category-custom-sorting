@@ -138,3 +138,79 @@ class WooCategoryDisplayPlugin
 }
 
 new WooCategoryDisplayPlugin();
+
+
+// Add Admin Menu Page
+function custom_product_selection_menu()
+{
+    add_menu_page(
+        'Product Selection',
+        'Product Selection',
+        'manage_options',
+        'custom-product-selection',
+        'custom_product_selection_page'
+    );
+}
+add_action('admin_menu', 'custom_product_selection_menu');
+
+// Display the Admin Page
+function custom_product_selection_page()
+{
+    ?>
+    <div class="wrap">
+        <h1>Select Products</h1>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('custom_product_selection_group');
+            do_settings_sections('custom-product-selection');
+            submit_button();
+            ?>
+        </form>
+    </div>
+    <?php
+}
+
+// Register Setting
+function custom_product_selection_settings()
+{
+    register_setting('custom_product_selection_group', 'selected_product_ids');
+
+    add_settings_section(
+        'custom_product_selection_section',
+        'Select Products to Display',
+        '',
+        'custom-product-selection'
+    );
+
+    add_settings_field(
+        'selected_product_ids',
+        'Select Products',
+        'custom_product_selection_field',
+        'custom-product-selection',
+        'custom_product_selection_section'
+    );
+}
+add_action('admin_init', 'custom_product_selection_settings');
+
+// Render the Select Products Field
+function custom_product_selection_field()
+{
+    $selected_products = get_option('selected_product_ids', []);
+    if (!is_array($selected_products)) {
+        $selected_products = [];
+    }
+
+    $args = array(
+        'post_type' => 'product',
+        'posts_per_page' => -1
+    );
+
+    $products = get_posts($args);
+
+    echo '<select name="selected_product_ids[]" multiple style="width:100%;height:200px;">';
+    foreach ($products as $product) {
+        $selected = in_array($product->ID, $selected_products) ? 'selected' : '';
+        echo '<option value="' . esc_attr($product->ID) . '" ' . $selected . '>' . esc_html(get_the_title($product->ID)) . '</option>';
+    }
+    echo '</select>';
+}
