@@ -140,6 +140,40 @@ class WooCategoryDisplayPlugin
 new WooCategoryDisplayPlugin();
 
 
+function custom_product_selection_enqueue_assets()
+{
+    $screen = get_current_screen();
+
+    if (strpos($screen->id, 'custom-product-selection') === false) {
+        return;
+    }
+
+    // Load Select2
+    wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
+    wp_enqueue_script('select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', ['jquery'], null, true);
+
+    // Custom JS to initialize Select2 with images
+    wp_add_inline_script('select2-js', '
+        jQuery(document).ready(function($) {
+            function formatProduct(product) {
+                if (!product.id) return product.text;
+                var img = $(product.element).data("image");
+                if (!img) return product.text;
+                return $(\'<span><img src="\' + img + \'" style="width:30px;height:30px;margin-right:10px;vertical-align:middle;" />\' + product.text + \'</span>\');
+            }
+
+            $("#custom-product-select").select2({
+                templateResult: formatProduct,
+                templateSelection: formatProduct,
+                width: "100%",
+                placeholder: "Search and select products..."
+            });
+        });
+    ');
+}
+add_action('admin_enqueue_scripts', 'custom_product_selection_enqueue_assets');
+
+
 // Add Admin Menu Page
 function custom_product_selection_menu()
 {
@@ -207,10 +241,15 @@ function custom_product_selection_field()
 
     $products = get_posts($args);
 
-    echo '<select name="selected_product_ids[]" multiple style="width:100%;height:200px;">';
+    echo '<select id="custom-product-select" name="selected_product_ids[]" multiple="multiple">';
     foreach ($products as $product) {
-        $selected = in_array($product->ID, $selected_products) ? 'selected' : '';
-        echo '<option value="' . esc_attr($product->ID) . '" ' . $selected . '>' . esc_html(get_the_title($product->ID)) . '</option>';
+        $product_id = $product->ID;
+        $title = get_the_title($product_id);
+        $image_url = get_the_post_thumbnail_url($product_id, 'thumbnail');
+        $selected = in_array($product_id, $selected_products) ? 'selected' : '';
+
+        echo '<option value="' . esc_attr($product_id) . '" ' . $selected . ' data-image="' . esc_url($image_url) . '">' . esc_html($title) . '</option>';
     }
     echo '</select>';
 }
+
